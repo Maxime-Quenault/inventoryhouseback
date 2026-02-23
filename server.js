@@ -1,19 +1,18 @@
-const express = require('express');
-const app = express();
-const db = require('./database/database');
-// const userRoutes = require('./routes/userRoutes');
-// const { swaggerUi, swaggerSpec } = require("./swagger");
+const db = require('./models');
+const app = require('./app');
 
-require('dotenv').config();
+const PORT = process.env.PORT || 3000;
 
-app.use(express.json());  // Pour analyser les requêtes JSON
-
-// app.use('/api/user', userRoutes);
-// app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
-// Démarrer le serveur
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-  console.log(`Serveur démarré sur le port ${port}`);
-  console.log(`Documentation Swagger : http://localhost:${port}/api-docs`);
-});
+db.sequelize.authenticate()
+  .then(() => {
+    console.log('✅Database connected');
+    return db.sequelize.sync({ alter: false }); // En prod : pas sync auto
+  })
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`🚀Server running on port ${PORT}`);
+    });
+  })
+  .catch(err => {
+    console.error('🚨Database error:', err);
+  });
