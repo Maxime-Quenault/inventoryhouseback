@@ -10,7 +10,7 @@
     "sequelize-auto": "^0.8.8"
   },
   "devDependencies": {
-    "sequelize-cli": "^6.6.5"
+    "sequelize-cli": "^6.3.0"
   },
   "scripts": {
     "migrate": "sequelize-cli db:migrate",
