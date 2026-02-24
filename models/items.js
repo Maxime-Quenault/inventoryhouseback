@@ -6,6 +6,7 @@ module.exports = (sequelize) => {
       Item.belongsTo(models.House, { foreignKey: 'house_id' });
       Item.belongsTo(models.StockCategory, { foreignKey: 'category_id' });
       Item.belongsTo(models.User, { foreignKey: 'created_by' });
+      Item.belongsTo(models.Location, { foreignKey: 'location_id' });
     }
   }
 
@@ -54,6 +55,11 @@ module.exports = (sequelize) => {
     },
 
     created_by: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+    },
+
+    location_id: {
       type: DataTypes.BIGINT,
       allowNull: false,
     },
