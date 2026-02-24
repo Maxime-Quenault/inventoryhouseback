@@ -63,3 +63,54 @@ exports.addItemToHouse = async (req, res) => {
     return res.status(500).json({ error: err.message });
   }
 };
+
+exports.deleteItemFromHouse = async (req, res) => {
+  const t = await db.sequelize.transaction();
+  try {
+    const userId = req.user.id;
+    const houseId = Number(req.params.houseId);
+    const itemId = Number(req.params.itemId);
+
+    if (!Number.isFinite(houseId) || !Number.isFinite(itemId)) {
+      await t.rollback();
+      return res.status(400).json({ error: 'Invalid houseId or itemId' });
+    }
+
+    const membership = await db.HouseMember.findOne({
+      where: { user_id: userId, house_id: houseId },
+      transaction: t,
+    });
+
+    if (!membership) {
+      await t.rollback();
+      return res.status(403).json({ error: 'You are not a member of this house' });
+    }
+
+    const item = await db.Item.findOne({
+      where: { id: itemId, house_id: houseId },
+      transaction: t,
+    });
+
+    if (!item) {
+      await t.rollback();
+      return res.status(404).json({ error: 'Item not found in this house' });
+    }
+
+    await db.StockMovement.create({
+      item_id: item.id,
+      user_id: userId,
+      house_id: houseId,
+      change_quantity: -Math.abs(item.quantity || 0),
+      action: 'remove',
+      created_at: new Date(),
+    }, { transaction: t });
+
+    await item.destroy({ transaction: t });
+
+    await t.commit();
+    return res.status(200).json({ message: 'Item deleted successfully' });
+  } catch (err) {
+    await t.rollback();
+    return res.status(500).json({ error: err.message });
+  }
+};
