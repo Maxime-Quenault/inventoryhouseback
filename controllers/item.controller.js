@@ -12,14 +12,15 @@ exports.addItemToHouse = async (req, res) => {
 
     const {
       category_id,
+      location_id,
       name,
       quantity,
       unit,
       expiration_date,
     } = req.body ?? {};
 
-    if (!category_id || !name || unit == null) {
-      return res.status(400).json({ error: 'category_id, name, unit are required' });
+    if (!category_id || !location_id || !name || unit == null) {
+      return res.status(400).json({ error: 'category_id, location_id, name, unit are required' });
     }
 
     const qty = Number.isFinite(Number(quantity)) ? Number(quantity) : 0;
@@ -35,6 +36,12 @@ exports.addItemToHouse = async (req, res) => {
       return res.status(403).json({ error: 'You are not a member of this house' });
     }
 
+    const location = await db.Location.findByPk(location_id, { transaction: t });
+    if (!location) {
+      await t.rollback();
+      return res.status(400).json({ error: 'Invalid location_id' });
+    }
+
     // 2) Create item
     const item = await db.Item.create({
       house_id: houseId,
@@ -44,6 +51,7 @@ exports.addItemToHouse = async (req, res) => {
       unit,
       expiration_date: expiration_date ? new Date(expiration_date) : null,
       created_by: userId,
+      location_id,
     }, { transaction: t });
 
     // 3) Create stock movement (recommended)
