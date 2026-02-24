@@ -37,3 +37,36 @@ exports.createHouse = async (req, res) => {
     return res.status(500).json({ error: err.message });
   }
 };
+
+exports.deleteHouse = async (req, res) => {
+  const t = await db.sequelize.transaction();
+  try {
+    const userId = req.user.id;
+    const houseId = Number(req.params.houseId);
+
+    if (!Number.isFinite(houseId)) {
+      await t.rollback();
+      return res.status(400).json({ error: 'Invalid houseId' });
+    }
+
+    const house = await db.House.findByPk(houseId, { transaction: t });
+
+    if (!house) {
+      await t.rollback();
+      return res.status(404).json({ error: 'House not found' });
+    }
+
+    if (Number(house.created_by) !== Number(userId)) {
+      await t.rollback();
+      return res.status(403).json({ error: 'Only the house owner can delete this house' });
+    }
+
+    await house.destroy({ transaction: t });
+
+    await t.commit();
+    return res.status(200).json({ message: 'House deleted successfully' });
+  } catch (err) {
+    await t.rollback();
+    return res.status(500).json({ error: err.message });
+  }
+};
