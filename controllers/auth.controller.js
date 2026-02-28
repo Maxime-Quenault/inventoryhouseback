@@ -6,10 +6,13 @@ const SALT_ROUNDS = 10;
 
 exports.register = async (req, res) => {
   try {
-    const { email, password } = req.body ?? {};
+    const { name, email, password } = req.body ?? {};
 
-    if (!email || !password) {
-      return res.status(400).json({ error: 'email and password are required' });
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'name, email and password are required' });
+    }
+    if (typeof name !== 'string' || !name.trim()) {
+      return res.status(400).json({ error: 'name must be a non-empty string' });
     }
     if (typeof password !== 'string' || password.length < 8) {
       return res.status(400).json({ error: 'password must be at least 8 characters' });
@@ -20,7 +23,7 @@ exports.register = async (req, res) => {
 
     const password_hash = await bcrypt.hash(password, SALT_ROUNDS);
 
-    const user = await db.User.create({ email, password_hash });
+    const user = await db.User.create({ name: name.trim(), email, password_hash });
 
     const token = jwt.sign(
       { sub: user.id },
@@ -29,7 +32,7 @@ exports.register = async (req, res) => {
     );
 
     return res.status(201).json({
-      user: { id: user.id, email: user.email },
+      user: { id: user.id, name: user.name, email: user.email },
       token,
     });
   } catch (err) {
@@ -62,7 +65,7 @@ exports.login = async (req, res) => {
     );
 
     return res.status(200).json({
-      user: { id: user.id, email: user.email },
+      user: { id: user.id, name: user.name, email: user.email },
       token,
     });
   } catch (err) {
