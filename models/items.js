@@ -64,13 +64,20 @@ module.exports = (sequelize) => {
       allowNull: false,
     },
 
+    deleted_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+
   }, {
     sequelize,
     modelName: 'Item',
     tableName: 'items',
     timestamps: true,
+    paranoid: true,
     createdAt: 'created_at',
     updatedAt: 'updated_at',
+    deletedAt: 'deleted_at',
   });
 
   return Item;
