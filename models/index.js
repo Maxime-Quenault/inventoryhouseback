@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const Sequelize = require('sequelize');
+const pg = require('pg');
 require('dotenv').config();
 
 const basename = path.basename(__filename);
@@ -23,6 +24,7 @@ function buildSequelizeOptions() {
     host: process.env.DATABASE_HOST,
     port: process.env.DATABASE_PORT || 5432,
     dialect: 'postgres',
+    dialectModule: pg,
     logging: false,
     searchPath: schema,
     define: {
