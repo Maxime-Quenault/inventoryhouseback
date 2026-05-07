@@ -19,7 +19,9 @@ module.exports = (sequelize) => {
     id: { type: DataTypes.BIGINT, primaryKey: true, autoIncrement: true },
     name: { type: DataTypes.STRING(255), allowNull: true },
     email: { type: DataTypes.STRING(320), allowNull: false, unique: true },
-    password_hash: { type: DataTypes.STRING(255), allowNull: false },
+    password_hash: { type: DataTypes.STRING(255), allowNull: true },
+    google_id: { type: DataTypes.STRING(255), allowNull: true, unique: true },
+    auth_provider: { type: DataTypes.STRING(50), allowNull: false, defaultValue: 'local' },
   }, {
     sequelize,
     modelName: 'User',

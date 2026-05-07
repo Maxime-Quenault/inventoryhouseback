@@ -34,6 +34,10 @@ module.exports = {
       url: 'http://localhost:3000',
       description: 'Serveur local',
     },
+    {
+      url: 'https://your-project.vercel.app',
+      description: 'Remplacer par le domaine Vercel de production',
+    },
   ],
   tags: [
     { name: 'System' },
@@ -112,6 +116,34 @@ module.exports = {
           },
           400: errorResponse,
           401: errorResponse,
+        },
+      },
+    },
+    '/api/auth/google': {
+      post: {
+        tags: ['Auth'],
+        summary: 'Se connecter avec Google',
+        description: 'L app mobile recupere un idToken via Google Sign-In, puis l envoie ici. Le backend verifie ce token avec GOOGLE_CLIENT_ID ou GOOGLE_CLIENT_IDS et renvoie le JWT InventoryHouse.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/GoogleLoginRequest' },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'Connexion Google reussie',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/AuthResponse' },
+              },
+            },
+          },
+          400: errorResponse,
+          401: errorResponse,
+          500: errorResponse,
         },
       },
     },
@@ -723,6 +755,16 @@ module.exports = {
           password: { type: 'string', example: 'secret123' },
         },
       },
+      GoogleLoginRequest: {
+        type: 'object',
+        required: ['idToken'],
+        properties: {
+          idToken: {
+            type: 'string',
+            description: 'Google ID token retourne par Google Sign-In cote mobile.',
+          },
+        },
+      },
       AuthResponse: {
         type: 'object',
         properties: {
@@ -736,6 +778,7 @@ module.exports = {
           id: { type: 'integer', format: 'int64', example: 1 },
           name: { type: 'string', nullable: true, example: 'Alex Martin' },
           email: { type: 'string', format: 'email', example: 'alex@example.com' },
+          auth_provider: { type: 'string', enum: ['local', 'google'], example: 'local' },
           created_at: { type: 'string', format: 'date-time' },
           updated_at: { type: 'string', format: 'date-time' },
         },
